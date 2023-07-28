@@ -1,0 +1,1 @@
+CUDA_LAUNCH_BLOCKING=1 python scripts/run_train.py --diff_steps 2000 --model_arch transformer --lr 0.0001 --lr_anneal_steps 200000  --seed 102 --noise_schedule sqrt --in_channel 16 --modality humanEval --submit no --padding_mode block --app "--predict_xstart True --training_mode e2e --vocab_size 30522 " --notes xstart_e2e
