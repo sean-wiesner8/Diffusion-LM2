@@ -22,6 +22,7 @@ def setup_dist():
     """
     Setup a distributed process group.
     """
+    print("improved-diffusion/improved_diffusion/dist_util.py, method: setup_dist()")
     if dist.is_initialized():
         return
 
@@ -45,6 +46,7 @@ def dev():
     """
     Get the device to use for torch.distributed.
     """
+    print("improved-diffusion/improved_diffusion/dist_util.py, method: dev()")
     if th.cuda.is_available():
         return th.device(f"cuda:{MPI.COMM_WORLD.Get_rank() % GPUS_PER_NODE}")
     return th.device("cpu")
@@ -54,6 +56,7 @@ def load_state_dict(path, **kwargs):
     """
     Load a PyTorch file without redundant fetches across MPI ranks.
     """
+    print("improved-diffusion/improved_diffusion/dist_util.py, method: load_state_dict(path, **kwargs)")
     if MPI.COMM_WORLD.Get_rank() == 0:
         with bf.BlobFile(path, "rb") as f:
             data = f.read()
@@ -67,12 +70,14 @@ def sync_params(params):
     """
     Synchronize a sequence of Tensors across ranks from rank 0.
     """
+    print("improved-diffusion/improved_diffusion/dist_util.py, method: sync_params(params)")
     for p in params:
         with th.no_grad():
             dist.broadcast(p, 0)
 
 
 def _find_free_port():
+    print("improved-diffusion/improved_diffusion/dist_util.py, method: _find_free_port()")
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(("", 0))

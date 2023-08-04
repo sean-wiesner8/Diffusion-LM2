@@ -28,6 +28,7 @@ from infill_util import langevin_fn3, get_score, langevin_fn3_compose, langevin_
 from spacy.lang.en import English
 
 def main():
+    print("improved-diffusion/scripts/infill.py")
     set_seed(101)
     args = create_argparser().parse_args()
 
@@ -586,15 +587,15 @@ def main():
                             greedy=False,
                     ):
                         final = sample["sample"]
-    
+
                 sample = final
-    
-    
+
+
                 if args.model_arch == '1d-unet':
                     print(sample.shape)
                     sample = sample.permute(0, 2, 1)
                     print(sample.shape)
-    
+
                 gathered_samples = [th.zeros_like(sample) for _ in range(dist.get_world_size())]
                 dist.all_gather(gathered_samples, sample)  # gather not supported with NCCL
                 all_images.extend([sample.cpu().numpy() for sample in gathered_samples])
@@ -605,7 +606,7 @@ def main():
                     dist.all_gather(gathered_labels, classes)
                     all_labels.extend([labels.cpu().numpy() for labels in gathered_labels])
                 logger.log(f"created {len(all_images) * args.batch_size} samples")
-    
+
             arr = np.concatenate(all_images, axis=0)
             arr = arr[: args.num_samples]
             if args.verbose == 'pipe':

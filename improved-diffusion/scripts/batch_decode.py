@@ -3,6 +3,7 @@ import os, sys, glob
 # full_lst = glob.glob('diff_models_synth32*')
 # full_lst = glob.glob('diff_models_synth32_3_rand16*')
 # full_lst = glob.glob('diff_models_synth_rand_16_trans_lr_1e-5_long_Lsimple')
+print("improved-diffusion/scripts/batch_decode.py")
 full_lst = glob.glob(sys.argv[1])
 top_p = -1.0 if len(sys.argv) < 2 else sys.argv[2]
 print(f'top_p = {top_p}')

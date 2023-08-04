@@ -1,9 +1,10 @@
-import sys 
+import sys
 import os
 import argparse
 
 if __name__ == '__main__':
 
+    print("train_run.py")
     parser = argparse.ArgumentParser(description='training args.')
     parser.add_argument('--experiment', type=str, default='no-rep', help='no-rep=gpt2gen, no-zipfs, has-rep=regular, rm-window-rep')
     parser.add_argument('--task', type=str, default='wp', help='wp, wikitext')

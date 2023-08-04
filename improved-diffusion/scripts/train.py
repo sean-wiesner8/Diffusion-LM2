@@ -25,8 +25,9 @@ import torch.distributed as dist
 import wandb
 
 def main():
+    print("improved-diffusion/scripts/train.py")
     args = create_argparser().parse_args()
-    set_seed(args.seed) 
+    set_seed(args.seed)
     dist_util.setup_dist() # DEBUG **
     logger.configure()
 

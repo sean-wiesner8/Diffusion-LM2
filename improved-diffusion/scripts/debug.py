@@ -25,6 +25,7 @@ from transformers import set_seed
 from functools import partial
 
 def main():
+    print("improved-diffusion/scripts/debug.py")
     set_seed(101)
     args = create_argparser().parse_args()
 

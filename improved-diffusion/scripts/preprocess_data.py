@@ -1,6 +1,7 @@
-import json 
+import json
 import csv
 import random
+print("improved-diffusion/scripts/preprocess_data.py")
 random.seed(10)
 sentence_lst = []
 roc_train = 'diffusion_lm/ROCstory/ROCstory_full.csv'

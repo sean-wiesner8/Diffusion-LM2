@@ -1,4 +1,5 @@
 import os, sys, glob
+print("improved-diffusion/scripts/batch_nll.py")
 full_lst = glob.glob(sys.argv[1])
 pattern_ = 'model' if len(sys.argv) < 2 else sys.argv[2]
 clamp = 'clamp' if len(sys.argv) <= 3 else sys.argv[3]

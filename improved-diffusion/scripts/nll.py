@@ -22,6 +22,7 @@ from transformers import set_seed
 from improved_diffusion.test_util import get_weights, denoised_fn_round, compute_logp, load_results
 
 def main():
+    print("improved-diffusion/scripts/nll.py")
     set_seed(101)
     args = create_argparser().parse_args()
 

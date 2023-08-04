@@ -24,6 +24,7 @@ def get_named_beta_schedule(schedule_name, num_diffusion_timesteps):
     Beta schedules may be added, but should not be removed or changed once
     they are committed to maintain backwards compatibility.
     """
+    print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: get_named_beta_schedule")
     if schedule_name == "linear":
         # Linear schedule from Ho et al, extended to work for any number of
         # diffusion steps.
@@ -84,6 +85,7 @@ def betas_for_alpha_bar2(num_diffusion_timesteps, alpha_bar, max_beta=0.999):
     :param max_beta: the maximum beta to use; use values lower than 1 to
                      prevent singularities.
     """
+    print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: betas_for_alpha_bar2")
     betas = []
     betas.append(min(1-alpha_bar(0), max_beta))
     for i in range(num_diffusion_timesteps-1):
@@ -104,6 +106,7 @@ def betas_for_alpha_bar(num_diffusion_timesteps, alpha_bar, max_beta=0.999):
     :param max_beta: the maximum beta to use; use values lower than 1 to
                      prevent singularities.
     """
+    print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: betas_for_alpha_bar")
     betas = []
     for i in range(num_diffusion_timesteps):
         t1 = i / num_diffusion_timesteps
@@ -181,6 +184,7 @@ class GaussianDiffusion:
         training_mode='emb',
         # model_arch='conv-unet',
     ):
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, class: GaussianDiffusion")
         self.model_mean_type = model_mean_type
         self.model_var_type = model_var_type
         self.loss_type = loss_type
@@ -228,7 +232,7 @@ class GaussianDiffusion:
 
         self.training_mode = training_mode
         print('training mode is ', training_mode)
-        self.mapping_func = None 
+        self.mapping_func = None
         #
         # if training_mode == 'e2e':
         #     self.training_losses = self.training_losses_e2e
@@ -236,6 +240,7 @@ class GaussianDiffusion:
         #     self.training_losses = self.training_losses_emb
 
     def training_losses(self, model, *args, **kwargs):
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, class: GaussianDiffusion, method: training_losses")
         if self.training_mode == 'e2e':
             return self.training_losses_e2e(model, *args, **kwargs)
         elif self.training_mode == 'e2e-simple':
@@ -244,6 +249,7 @@ class GaussianDiffusion:
             return self.training_losses_emb(model, *args, **kwargs)
 
     def calc_bpd_loop(self, model, *args, **kwargs):
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, class: GaussianDiffusion, method: calc_bdp_loop")
         if self.training_mode == 'e2e':
             return self.calc_bpd_loop_e2e(model, *args, **kwargs)
         else:
@@ -257,6 +263,7 @@ class GaussianDiffusion:
         :param t: the number of diffusion steps (minus 1). Here, 0 means one step.
         :return: A tuple (mean, variance, log_variance), all of x_start's shape.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, class: GaussianDiffusion, method: q_mean_variance")
         mean = (
             _extract_into_tensor(self.sqrt_alphas_cumprod, t, x_start.shape) * x_start
         )
@@ -277,6 +284,7 @@ class GaussianDiffusion:
         :param noise: if specified, the split-out normal noise.
         :return: A noisy version of x_start.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, class: GaussianDiffusion, method: q_sample")
         if noise is None:
             noise = th.randn_like(x_start)
         assert noise.shape == x_start.shape
@@ -659,7 +667,7 @@ class GaussianDiffusion:
             model_kwargs=None,
             device=None,
             progress=False,
-            custom_t_start=100, 
+            custom_t_start=100,
     ):
         """
         Generate samples from the model and yield intermediate samples from
@@ -843,7 +851,7 @@ class GaussianDiffusion:
                 )
                 if langevin_func is not None:
                     out['t'] = t
-                    out['img'] = img 
+                    out['img'] = img
                     out = langevin_func(out)
                 yield out
                 img = out["sample"]
@@ -1201,7 +1209,7 @@ class GaussianDiffusion:
             # from torch.distributions import Normal
             # normal_dist = Normal(out["mean"], (0.5 * out["log_variance"]).exp())
             # decoder_nll = -normal_dist.log_prob(x_start)
-            assert mapping_func is not None 
+            assert mapping_func is not None
             if mapping_func is not None and th.any(t == 0):
 
                 decoder_nll = mapping_func(out["mean"], input_ids) / out["mean"].size(-1)
@@ -1298,7 +1306,7 @@ class GaussianDiffusion:
         # At the first timestep return the decoder NLL,
         # otherwise return KL(q(x_{t-1}|x_t,x_0) || p(x_{t-1}|x_t))
         # output = th.where((t == 0), decoder_nll, kl)
-        output = kl + decoder_nll + kl_T 
+        output = kl + decoder_nll + kl_T
         return {"output": output, "pred_xstart": out["pred_xstart"], 'kl': kl, 'decoder_nll':decoder_nll, 'kl_T':kl_T}
 
     def training_losses_emb(self, model, x_start, t, model_kwargs=None, noise=None):

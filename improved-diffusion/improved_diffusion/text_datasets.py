@@ -735,11 +735,46 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
         'openai_humaneval', split='test')  # loading dataset
     raw_datasets = raw_datasets.train_test_split(test_size=0.2, shuffle=True)
     column_names = raw_datasets['train'].column_names
+    print("column names ********")
+    print(column_names)
+    print('\n\n')
+    print("prompt info: ")
+    prompt = raw_datasets['train']['prompt']
+    prompt_lens = [len(iid) for iid in prompt]
+    maximum = np.max(prompt_lens)
+    minimum = np.min(prompt_lens)
+    std = np.std(prompt_lens)
+    mean = np.mean(prompt_lens)
+    print(f"maximum: {maximum}")
+    print(f"minimum: {minimum}")
+    print(f"std: {std}")
+    print(f"mean: {mean}")
+    print('\n\n\n')
+    print("canonical_solution info: ")
+    canonical_solution = raw_datasets['train']['prompt']
+    cs_lens = [len(iid) for iid in canonical_solution]
+    maximum = np.max(cs_lens)
+    minimum = np.min(cs_lens)
+    std = np.std(cs_lens)
+    mean = np.mean(cs_lens)
+    print(f"maximum: {maximum}")
+    print(f"minimum: {minimum}")
+    print(f"std: {std}")
+    print(f"mean: {mean}")
 
     def tokenize_function(examples):
         output = tokenizer(examples['prompt'], add_special_tokens=False)
-        len_id = str(len(output['input_ids']))
-        print(f"input_id length: {len_id}")
+        input_ids = output['input_ids']
+        input_ids_len = [len(iid) for iid in input_ids]
+        print("tokenize_function info")
+        maximum = np.max(input_ids_len)
+        minimum = np.min(input_ids_len)
+        std = np.std(input_ids_len)
+        mean = np.mean(input_ids_len)
+        print(f"maximum: {maximum}")
+        print(f"minimum: {minimum}")
+        print(f"std: {std}")
+        print(f"mean: {mean}")
         return output
 
     tokenized_datasets = raw_datasets.map(
@@ -759,7 +794,6 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
             k: list(chain(*examples[k])) for k in examples.keys()}
         total_length = len(concatenated_examples[list(examples.keys())[0]])
         if total_length >= block_size:
-            print("GOT HERE 3 ********")
             total_length = (total_length // block_size) * block_size
         result = {
             k: [t[i: i + block_size]
@@ -777,7 +811,7 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
     )
 
     print(lm_datasets)
-
+    print("lm_datasets info")
     input_ids = lm_datasets['train']['input_ids']
     input_ids_len = [len(iid) for iid in input_ids]
     maximum = np.max(input_ids_len)

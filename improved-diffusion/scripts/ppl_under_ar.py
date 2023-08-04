@@ -21,6 +21,7 @@ from improved_diffusion.script_util import (
 from improved_diffusion.test_util import  load_results
 
 def main():
+    print("improved-diffusion/scripts/ppl_under_ar.py")
     args = create_argparser().parse_args()
     # set_seed(101)
     set_seed(108)

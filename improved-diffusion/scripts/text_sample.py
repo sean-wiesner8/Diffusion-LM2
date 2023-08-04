@@ -26,6 +26,7 @@ from improved_diffusion.script_util import (
 
 
 def main():
+    print("improved-diffusion/scripts/text_sample.py")
     set_seed(101)
     args = create_argparser().parse_args()
 

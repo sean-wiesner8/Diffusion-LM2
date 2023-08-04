@@ -3,6 +3,7 @@ import os
 import argparse
 
 if __name__ == '__main__':
+    print("improved-diffusion/scripts/run_train.py")
 
     parser = argparse.ArgumentParser(description='training args.')
     parser.add_argument('--experiment', type=str, default='random', help='no-rep=gpt2gen, no-zipfs, has-rep=regular, rm-window-rep')
