@@ -13,6 +13,7 @@ def model_and_diffusion_defaults():
     """
     Defaults for image training.
     """
+    print("improved-diffusion/improved_diffusion/script_util.py, method: model_and_diffusion_defaults")
     return dict(
         image_size=64,
         num_channels=128,
@@ -74,6 +75,7 @@ def create_model_and_diffusion(
     logits_mode,
     **kwargs,
 ):
+    print("improved-diffusion/improved_diffusion/script_util.py, method: create_model_and_diffusion")
     model = create_model(
         image_size,
         num_channels,
@@ -132,6 +134,7 @@ def create_model(
     experiment_mode='lm',
     logits_mode=1,
 ):
+    print("improved-diffusion/improved_diffusion/script_util.py, method: create_model")
     print(f'creating model, based on {model_arch}')
     if model_arch == 'conv-unet':
         if image_size == 256:
@@ -306,6 +309,7 @@ def sr_create_model_and_diffusion(
     use_checkpoint,
     use_scale_shift_norm,
 ):
+    print("improved-diffusion/improved_diffusion/script_util.py, method: sr_create_model_and_diffusion")
     model = sr_create_model(
         large_size,
         small_size,
@@ -347,6 +351,7 @@ def sr_create_model(
     use_scale_shift_norm,
     dropout,
 ):
+    print("improved-diffusion/improved_diffusion/script_util.py, method: sr_create_model")
     _ = small_size  # hack to prevent unused variable
 
     if large_size == 256:
@@ -390,6 +395,7 @@ def create_gaussian_diffusion(
     model_arch='conv-unet',
     training_mode='emb',
 ):
+    print("improved-diffusion/improved_diffusion/script_util.py, method: create_gaussian_diffusion")
     betas = gd.get_named_beta_schedule(noise_schedule, steps)
     if training_mode == 'e2e':
         # end to end training

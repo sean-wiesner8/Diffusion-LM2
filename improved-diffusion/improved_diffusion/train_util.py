@@ -50,6 +50,8 @@ class TrainLoop:
         eval_data=None,
         eval_interval=-1,
     ):
+        print("improved-diffusion/improved_diffusion/train_util.py, class: TrainLoop")
+        print("started __init__")
         self.model = model
         self.diffusion = diffusion
         self.data = data
@@ -119,6 +121,7 @@ class TrainLoop:
                 )
             self.use_ddp = False
             self.ddp_model = self.model
+            print("completed __init__")
 
     def _load_and_sync_parameters(self):
         resume_checkpoint = find_resume_checkpoint() or self.resume_checkpoint
@@ -168,17 +171,30 @@ class TrainLoop:
         self.model.convert_to_fp16()
 
     def run_loop(self):
+        print("started run_loop")
+        iter = 1
         while (
             not self.lr_anneal_steps
             or self.step + self.resume_step < self.lr_anneal_steps
         ):
+            print(f"iter: {iter}")
+            iter += 1
+            print("entered while loop")
             batch, cond = next(self.data)
             self.run_step(batch, cond)
+            print("completed run_step")
             if self.step % self.log_interval == 0:
+                print("reached condition 1 in run_loop")
                 logger.dumpkvs()
             if self.eval_data is not None and self.step % self.eval_interval == 0:
+                print("reached condition 2 in run_loop")
+                print(f"eval data: {self.eval_data}")
+                for x in self.eval_data:
+                    print(x)
                 batch_eval, cond_eval = next(self.eval_data)
+                print("created batch_eval, cond_eval")
                 self.forward_only(batch, cond)
+                print("completed forward_only")
                 print('eval on validation set')
                 logger.dumpkvs()
             if self.step % self.save_interval == 0:
@@ -190,6 +206,7 @@ class TrainLoop:
         # Save the last checkpoint if it wasn't already saved.
         if (self.step - 1) % self.save_interval != 0:
             self.save()
+        print("finished run_loop")
 
     def run_step(self, batch, cond):
         self.forward_backward(batch, cond)
@@ -200,6 +217,9 @@ class TrainLoop:
         self.log_step()
 
     def forward_only(self, batch, cond):
+        print("started forward_only")
+        print(f"batch: {batch}")
+        print(f"cond: {cond}")
         with th.no_grad():
             zero_grad(self.model_params)
             for i in range(0, batch.shape[0], self.microbatch):

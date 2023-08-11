@@ -23,6 +23,7 @@ def conv_nd(dims, *args, **kwargs):
     """
     Create a 1D, 2D, or 3D convolution module.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: conv_nd")
     if dims == 1:
         return nn.Conv1d(*args, **kwargs)
     elif dims == 2:
@@ -36,6 +37,7 @@ def linear(*args, **kwargs):
     """
     Create a linear module.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: linear")
     return nn.Linear(*args, **kwargs)
 
 
@@ -43,6 +45,7 @@ def avg_pool_nd(dims, *args, **kwargs):
     """
     Create a 1D, 2D, or 3D average pooling module.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: avg_pool_nd")
     if dims == 1:
         return nn.AvgPool1d(*args, **kwargs)
     elif dims == 2:
@@ -61,6 +64,7 @@ def update_ema(target_params, source_params, rate=0.99):
     :param source_params: the source parameter sequence.
     :param rate: the EMA rate (closer to 1 means slower).
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: update_ema")
     for targ, src in zip(target_params, source_params):
         targ.detach().mul_(rate).add_(src, alpha=1 - rate)
 
@@ -69,6 +73,7 @@ def zero_module(module):
     """
     Zero out the parameters of a module and return it.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: zero_module")
     for p in module.parameters():
         p.detach().zero_()
     return module
@@ -78,6 +83,7 @@ def scale_module(module, scale):
     """
     Scale the parameters of a module and return it.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: scale_module")
     for p in module.parameters():
         p.detach().mul_(scale)
     return module
@@ -87,6 +93,7 @@ def mean_flat(tensor):
     """
     Take the mean over all non-batch dimensions.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: mean_flat")
     return tensor.mean(dim=list(range(1, len(tensor.shape))))
 
 
@@ -97,6 +104,7 @@ def normalization(channels):
     :param channels: number of input channels.
     :return: an nn.Module for normalization.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: normalization")
     return GroupNorm32(32, channels)
 
 
@@ -110,6 +118,7 @@ def timestep_embedding(timesteps, dim, max_period=10000):
     :param max_period: controls the minimum frequency of the embeddings.
     :return: an [N x dim] Tensor of positional embeddings.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: timestep_embedding")
     half = dim // 2
     freqs = th.exp(
         -math.log(max_period) * th.arange(start=0, end=half, dtype=th.float32) / half
@@ -132,6 +141,7 @@ def checkpoint(func, inputs, params, flag):
                    explicitly take as arguments.
     :param flag: if False, disable gradient checkpointing.
     """
+    print("improved-diffusion/improved_diffusion/nn.py, method: checkpoint")
     if flag:
         args = tuple(inputs) + tuple(params)
         return CheckpointFunction.apply(func, len(inputs), *args)

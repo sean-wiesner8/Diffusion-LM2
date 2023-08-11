@@ -26,6 +26,7 @@ def space_timesteps(num_timesteps, section_counts):
                            DDIM paper.
     :return: a set of diffusion steps from the original process to use.
     """
+    print("improved-diffusion/improved_diffusion/respace.py, method: space_timestep")
     if isinstance(section_counts, str):
         if section_counts.startswith("ddim"):
             desired_count = int(section_counts[len("ddim") :])
@@ -70,6 +71,7 @@ class SpacedDiffusion(GaussianDiffusion):
     """
 
     def __init__(self, use_timesteps, **kwargs):
+        print("improved-diffusion/improved_diffusion/respace.py, class: SpacedDiffusion")
         self.use_timesteps = set(use_timesteps)
         self.timestep_map = []
         self.original_num_steps = len(kwargs["betas"])

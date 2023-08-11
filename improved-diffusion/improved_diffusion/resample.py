@@ -12,6 +12,7 @@ def create_named_schedule_sampler(name, diffusion):
     :param name: the name of the sampler.
     :param diffusion: the diffusion object to sample for.
     """
+    print("improved-diffusion/improved_diffusion/resample.py, method: create_named_schedule_sampler")
     if name == "uniform":
         return UniformSampler(diffusion)
     elif name == "loss-second-moment":
@@ -49,6 +50,7 @@ class ScheduleSampler(ABC):
                  - timesteps: a tensor of timestep indices.
                  - weights: a tensor of weights to scale the resulting losses.
         """
+        print("improved-diffusion/improved_diffusion/resample.py, method: sample")
         w = self.weights()
         p = w / np.sum(w)
         indices_np = np.random.choice(len(p), size=(batch_size,), p=p)
@@ -80,6 +82,7 @@ class LossAwareSampler(ScheduleSampler):
         :param local_ts: an integer Tensor of timesteps.
         :param local_losses: a 1D Tensor of losses.
         """
+        print("improved-diffusion/improved_diffusion/resample.py, method: update_with_local_losses")
         batch_sizes = [
             th.tensor([0], dtype=th.int32, device=local_ts.device)
             for _ in range(dist.get_world_size())

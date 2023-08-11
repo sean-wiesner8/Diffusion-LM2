@@ -301,6 +301,7 @@ class GaussianDiffusion:
             q(x_{t-1} | x_t, x_0)
 
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: q_posterior_mean_variance")
         assert x_start.shape == x_t.shape
         posterior_mean = (
             _extract_into_tensor(self.posterior_mean_coef1, t, x_t.shape) * x_start
@@ -341,6 +342,7 @@ class GaussianDiffusion:
                  - 'log_variance': the log of 'variance'.
                  - 'pred_xstart': the prediction for x_0.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_mean_variance2")
         if model_kwargs is None:
             model_kwargs = {}
         if self.model_arch == 'conv-unet':
@@ -475,6 +477,7 @@ class GaussianDiffusion:
                  - 'log_variance': the log of 'variance'.
                  - 'pred_xstart': the prediction for x_0.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_mean_variance")
         if model_kwargs is None:
             model_kwargs = {}
         if self.model_arch == 'conv-unet' or self.model_arch == '1d-unet':
@@ -608,6 +611,7 @@ class GaussianDiffusion:
                  - 'sample': a random sample from the model.
                  - 'pred_xstart': a prediction of x_0.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_sample")
         out = self.p_mean_variance(
             model,
             x,
@@ -677,6 +681,7 @@ class GaussianDiffusion:
         Returns a generator over dicts, where each dict is the return value of
         p_sample().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_debug_loop_progressive")
         if device is None:
             device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
@@ -736,6 +741,7 @@ class GaussianDiffusion:
         :param progress: if True, show a tqdm progress bar.
         :return: a non-differentiable batch of samples.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_sample_loop")
         final = None
         for sample in self.p_sample_loop_progressive(
             model,
@@ -771,6 +777,7 @@ class GaussianDiffusion:
         Returns a generator over dicts, where each dict is the return value of
         p_sample().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_sample_loop_progressive")
         if device is None:
             device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
@@ -822,6 +829,7 @@ class GaussianDiffusion:
         Returns a generator over dicts, where each dict is the return value of
         p_sample().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_sample_loop_langevin_progressive")
         if device is None:
             device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
@@ -879,6 +887,7 @@ class GaussianDiffusion:
         Returns a generator over dicts, where each dict is the return value of
         p_sample().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_sample_loop_progressive_infill")
         if device is None:
             device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
@@ -949,6 +958,7 @@ class GaussianDiffusion:
         Returns a generator over dicts, where each dict is the return value of
         p_sample().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: p_sample_loop_progressive_merge")
         if device is None:
             device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
@@ -1012,6 +1022,7 @@ class GaussianDiffusion:
 
         Same usage as p_sample().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: ddim_sample")
         out = self.p_mean_variance(
             model,
             x,
@@ -1059,6 +1070,7 @@ class GaussianDiffusion:
         """
         Sample x_{t+1} from the model using DDIM reverse ODE.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: ddim_reverse_sample")
         assert eta == 0.0, "Reverse ODE only for deterministic path"
         out = self.p_mean_variance(
             model,
@@ -1103,6 +1115,7 @@ class GaussianDiffusion:
 
         Same usage as p_sample_loop().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: ddim_sample_loop")
         final = None
         for sample in self.ddim_sample_loop_progressive(
             model,
@@ -1138,6 +1151,7 @@ class GaussianDiffusion:
 
         Same usage as p_sample_loop_progressive().
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: ddim_sample_loop_progressive")
         if device is None:
             device = next(model.parameters()).device
         assert isinstance(shape, (tuple, list))
@@ -1185,6 +1199,7 @@ class GaussianDiffusion:
                  - 'output': a shape [N] tensor of NLLs or KLs.
                  - 'pred_xstart': the x_0 predictions.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: _vb_terms_bpd")
         #lambda *args, r=frozen_out: r,
         true_mean, _, true_log_variance_clipped = self.q_posterior_mean_variance(
             x_start=x_start, x_t=x_t, t=t
@@ -1255,6 +1270,7 @@ class GaussianDiffusion:
                  - 'output': a shape [N] tensor of NLLs or KLs.
                  - 'pred_xstart': the x_0 predictions.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: _vb_terms_bpd_e2e")
         # lambda *args, r=frozen_out: r,
         true_mean, _, true_log_variance_clipped = self.q_posterior_mean_variance(
             x_start=x_start, x_t=x_t, t=t
@@ -1322,6 +1338,7 @@ class GaussianDiffusion:
         :return: a dict with the key "loss" containing a tensor of shape [N].
                  Some mean or variance settings may also have other keys.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: training_losses_emb")
         if model_kwargs is None:
             model_kwargs = {}
         if noise is None:
@@ -1473,6 +1490,7 @@ class GaussianDiffusion:
         :return: a dict with the key "loss" containing a tensor of shape [N].
                  Some mean or variance settings may also have other keys.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: training_losses_e2e")
         assert 'input_ids' in model_kwargs
         input_ids = model_kwargs.pop('input_ids').to(t.device)
         x_start_mean = model.model.module.get_embeds(input_ids)
@@ -1603,6 +1621,7 @@ class GaussianDiffusion:
         :return: a dict with the key "loss" containing a tensor of shape [N].
                  Some mean or variance settings may also have other keys.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: training_losses_e2e_simple")
         assert 'input_ids' in model_kwargs
         x_start = None
         input_ids = model_kwargs.pop('input_ids').to(t.device)
@@ -1728,6 +1747,7 @@ class GaussianDiffusion:
         :param x_start: the [N x C x ...] tensor of inputs.
         :return: a batch of [N] KL values (in bits), one per batch element.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: _prior_bpd")
         batch_size = x_start.shape[0]
         t = th.tensor([self.num_timesteps - 1] * batch_size, device=x_start.device)
         qt_mean, _, qt_log_variance = self.q_mean_variance(x_start, t)
@@ -1822,6 +1842,7 @@ class GaussianDiffusion:
                  - xstart_mse: an [N x T] tensor of x_0 MSEs for each timestep.
                  - mse: an [N x T] tensor of epsilon MSEs for each timestep.
         """
+        print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: calc_bpd_loop_emb")
         device = x_start.device
         batch_size = x_start.shape[0]
 
@@ -1907,6 +1928,7 @@ def _extract_into_tensor(arr, timesteps, broadcast_shape):
                             dimension equal to the length of timesteps.
     :return: a tensor of shape [batch_size, 1, ...] where the shape has K dims.
     """
+    print("improved-diffusion/improved_diffusion/gaussian_diffusion.py, method: _extract_into_tensor")
     res = th.from_numpy(arr).to(device=timesteps.device)[timesteps].float()
     while len(res.shape) < len(broadcast_shape):
         res = res[..., None]

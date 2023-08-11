@@ -35,6 +35,7 @@ def load_data_text(
                        exception will be raised.
     :param deterministic: if True, yield results in a deterministic order.
     """
+    print("improved-diffusion/improved_diffusion/text_datasets.py, method: load_data_text")
     print('hello loading text data. ')
 
     if data_args.experiment.startswith('random') and model is None:
@@ -118,9 +119,6 @@ def load_data_text(
         )
     iteration = 0
     while True:
-        str_iter = str(iteration)
-        print(f"iteration: {str_iter}")
-        iteration += 1
         yield from data_loader
 
 def helper_tokenize_encode_cond(sentence_lst, vocab_dict, model, seqlen, data_args):
@@ -318,6 +316,7 @@ def load_glove(vocab):
 
 def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                         split='train', load_vocab=None):
+    print("improved-diffusion/improved_diffusion/text_datasets.py, method: get_corpus_rocstory")
     import csv, torch, json
     from spacy.lang.en import English
 
@@ -653,6 +652,7 @@ def read_e2e_files(path, args, tokenizer):
 
 
 def get_corpus_book(data_args, tokenizer, model, image_size, padding_mode='block', split='train',):
+    print("improved-diffusion/improved_diffusion/text_datasets.py, method: get_corpus_book")
     max_length = image_size ** 2
     import os
     assert padding_mode == 'block'
@@ -750,9 +750,10 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
     print(f"std: {std}")
     print(f"mean: {mean}")
     print('\n\n\n')
-    print("canonical_solution info: ")
-    canonical_solution = raw_datasets['train']['prompt']
-    cs_lens = [len(iid) for iid in canonical_solution]
+    print("prompt info: ")
+    canonical_solution = raw_datasets['train']['canonical_solution']
+    prompt = raw_datasets['train']['prompt']
+    cs_lens = [len(iid) for iid in prompt]
     maximum = np.max(cs_lens)
     minimum = np.min(cs_lens)
     std = np.std(cs_lens)

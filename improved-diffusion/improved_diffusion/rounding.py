@@ -8,6 +8,7 @@ import sys, yaml, os
 # from custom_trainer import GPT2LMHeadModelCompress, BERTModelCompress, AutoEncoderWithNoise
 
 def load_models(modality, mode, model_name_or_path, emb_dim, file, extra_args=None):
+    print("improved-diffusion/improved_diffusion/rounding.py, method: load_models")
 
     if mode in ['random', 'random1', 'random_up_proj', 'glove']:
         if modality == 'synth':
@@ -54,6 +55,7 @@ def load_models(modality, mode, model_name_or_path, emb_dim, file, extra_args=No
 
 
 def load_tokenizer(modality, mode, model_name_or_path):
+    print("improved-diffusion/improved_diffusion/rounding.py, method: load_tokenizer")
     if mode in ['random', 'random_up_proj', 'glove']:
         if modality == 'synth':
             print(model_name_or_path, 'deciding what to load::: ')
@@ -82,6 +84,7 @@ def load_tokenizer(modality, mode, model_name_or_path):
     return tokenizer
 
 def rounding_func(mode, text_emb_lst, model, tokenizer, emb_scale_factor=1.0):
+    print("improved-diffusion/improved_diffusion/rounding.py, method: rounding_func")
     decoded_out_lst = []
     if mode in ['random', 'random_up_proj', 'glove']:
         down_proj_emb = model.weight  # input_embs

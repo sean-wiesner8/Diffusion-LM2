@@ -24,6 +24,7 @@ def load_data(
                        exception will be raised.
     :param deterministic: if True, yield results in a deterministic order.
     """
+    print("improved-diffusion/improved_diffusion/image_datasets.py, method: load_data")
     if not data_dir:
         raise ValueError("unspecified data directory")
     all_files = _list_image_files_recursively(data_dir)
@@ -100,7 +101,7 @@ class ImageDataset(Dataset):
         crop_y = (arr.shape[0] - self.resolution) // 2
         crop_x = (arr.shape[1] - self.resolution) // 2
         arr = arr[crop_y : crop_y + self.resolution, crop_x : crop_x + self.resolution]
-        if self.permutation is not None: # pixel value permutation. 
+        if self.permutation is not None: # pixel value permutation.
             # print('running permutation.')
             # print(arr)
             arr = self.permutation[arr]

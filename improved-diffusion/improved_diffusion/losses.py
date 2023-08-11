@@ -16,6 +16,7 @@ def normal_kl(mean1, logvar1, mean2, logvar2):
     Shapes are automatically broadcasted, so batches can be compared to
     scalars, among other use cases.
     """
+    print("improved-diffusion/improved_diffusion/losses.py, method: normal_kl")
     tensor = None
     for obj in (mean1, logvar1, mean2, logvar2):
         if isinstance(obj, th.Tensor):
@@ -48,6 +49,7 @@ def approx_standard_normal_cdf(x):
     A fast approximation of the cumulative distribution function of the
     standard normal.
     """
+    print("improved-diffusion/improved_diffusion/losses.py, method: approx_standard_normal_cdf")
     return 0.5 * (1.0 + th.tanh(np.sqrt(2.0 / np.pi) * (x + 0.044715 * th.pow(x, 3))))
 
 
@@ -62,6 +64,7 @@ def discretized_gaussian_log_likelihood(x, *, means, log_scales):
     :param log_scales: the Gaussian log stddev Tensor.
     :return: a tensor like x of log probabilities (in nats).
     """
+    print("improved-diffusion/improved_diffusion/losses.py, method: discretized_gaussian_log_likelihood")
     assert x.shape == means.shape == log_scales.shape
     centered_x = x - means
     inv_stdv = th.exp(-log_scales)
@@ -84,7 +87,7 @@ def gaussian_density(x, *, means, log_scales):
     from torch.distributions import Normal
     normal_dist = Normal(means, log_scales.exp())
     logp = normal_dist.log_prob(x)
-    return logp 
+    return logp
 
 
 def discretized_text_log_likelihood(x, *, means, log_scales):
@@ -98,9 +101,10 @@ def discretized_text_log_likelihood(x, *, means, log_scales):
     :param log_scales: the Gaussian log stddev Tensor.
     :return: a tensor like x of log probabilities (in nats).
     """
+    print("improved-diffusion/improved_diffusion/losses.py, method: discretized_text_log_likelihood")
     print(x.shape, means.shape)
     # assert x.shape == means.shape == log_scales.shape
-    print(x, means) 
+    print(x, means)
     centered_x = x - means
     inv_stdv = th.exp(-log_scales)
     plus_in = inv_stdv * (centered_x + 1.0 / 255.0)
