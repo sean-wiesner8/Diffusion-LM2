@@ -107,6 +107,7 @@ def main():
             load_vocab=rev_tokenizer,
             model=model22,
         )
+        # for d in data: print(d)
         next(data)
         model2, tokenizer = load_models(args.modality, args.experiment, args.model_name_or_path, args.in_channel,
                                         args.checkpoint_path, extra_args=args)

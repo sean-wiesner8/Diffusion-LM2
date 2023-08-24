@@ -37,6 +37,7 @@ def load_data_text(
     """
     print("improved-diffusion/improved_diffusion/text_datasets.py, method: load_data_text")
     print('hello loading text data. ')
+    print(f"data_dir: {data_dir}\nbatch_size: {batch_size}\nimage_size: {image_size}\nclass_cond: {class_cond}\ndeterministic: {deterministic}\ndata_args: {data_args}\ntask_mode: {task_mode}\nmodel: {model}\npadding_mode: {padding_mode}\nsplit: {split}\nload_vocab: {load_vocab}")
 
     if data_args.experiment.startswith('random') and model is None:
         model = None
@@ -82,6 +83,7 @@ def load_data_text(
     elif task_mode == 'humanEval':
         tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
         training_data, model = get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode=padding_mode, split=split,)
+        print(f"training_data: {training_data}\nmodel: {model}")
 
     if data_args.modality in ['roc-aug', 'roc', 'book', 'yelp', 'commonGen', 'commonGen-aug', 'humanEval'] and data_args.cache_mode=='no':
         dataset = TextDataset_NoCache(
@@ -764,7 +766,7 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
     print(f"mean: {mean}")
 
     def tokenize_function(examples):
-        output = tokenizer(examples['prompt'], add_special_tokens=False)
+        output = tokenizer(examples['canonical_solution'], add_special_tokens=False)
         input_ids = output['input_ids']
         input_ids_len = [len(iid) for iid in input_ids]
         print("tokenize_function info")
@@ -785,7 +787,7 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
         remove_columns=column_names,
         load_from_cache_file=True,
     )
-    print(tokenized_datasets)
+    print(f"tokenized_datasets: {tokenized_datasets}")
     block_size = max_length
 
     # Main data processing function that will concatenate all texts from our dataset and generate chunks of block_size.

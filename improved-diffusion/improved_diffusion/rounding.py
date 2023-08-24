@@ -32,7 +32,7 @@ def load_models(modality, mode, model_name_or_path, emb_dim, file, extra_args=No
             tokenizer = {v: k for k, v in dataset.vocab.items()}
         else:
             import json
-            if modality == 'book':
+            if modality == 'book' or modality == 'humanEval':
                 tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
                 if 'e2e' in file and (modality == 'book' or modality == 'humanEval'):
                     emb_dim = 1

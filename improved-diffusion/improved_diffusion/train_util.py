@@ -188,9 +188,6 @@ class TrainLoop:
                 logger.dumpkvs()
             if self.eval_data is not None and self.step % self.eval_interval == 0:
                 print("reached condition 2 in run_loop")
-                print(f"eval data: {self.eval_data}")
-                for x in self.eval_data:
-                    print(x)
                 batch_eval, cond_eval = next(self.eval_data)
                 print("created batch_eval, cond_eval")
                 self.forward_only(batch, cond)
