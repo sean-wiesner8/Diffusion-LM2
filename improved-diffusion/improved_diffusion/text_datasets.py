@@ -6,7 +6,8 @@ from torch.utils.data import DataLoader, Dataset
 from transformers import AutoModelForCausalLM, AutoConfig, AutoTokenizer, default_data_collator, PreTrainedTokenizerFast, \
     PreTrainedTokenizer
 from datasets import load_dataset
-import sys, os
+import sys
+import os
 import torch
 # sys.path.insert(0, os.path.join(sys.path[0], '../../transformers/examples/pytorch/language-modeling'))
 # from custom_trainer import GPT2LMHeadModelCompress, BERTModelCompress, AutoEncoderWithNoise
@@ -44,48 +45,49 @@ def load_data_text(
     elif data_args.experiment.startswith('random') and model is not None:
         print('loading initialized random embeddings. ')
 
-    if task_mode == 'roc' or task_mode == 'roc-aug' :
+    if task_mode == 'roc' or task_mode == 'roc-aug':
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
-                                            padding_mode=padding_mode, split=split,
-                                            load_vocab=load_vocab)
+                                                   padding_mode=padding_mode, split=split,
+                                                   load_vocab=load_vocab)
     elif task_mode == 'simple-wiki':
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
-                                            padding_mode=padding_mode, split=split,
-                                            load_vocab=load_vocab)
+                                                   padding_mode=padding_mode, split=split,
+                                                   load_vocab=load_vocab)
 
     elif task_mode == 'e2e-tgt':
         print('hello loading e2e-tgt. ')
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
-                                            padding_mode=padding_mode, split=split,
-                                            load_vocab=load_vocab)
+                                                   padding_mode=padding_mode, split=split,
+                                                   load_vocab=load_vocab)
     elif task_mode == 'yelp':
         print('hello loading yelp ')
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
-                                            padding_mode=padding_mode, split=split,
-                                            load_vocab=load_vocab)
+                                                   padding_mode=padding_mode, split=split,
+                                                   load_vocab=load_vocab)
 
     elif task_mode == 'commonGen' or task_mode == 'commonGen-aug':
         print('hello loading common-gen ')
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
-                                            padding_mode=padding_mode, split=split,
-                                            load_vocab=load_vocab)
+                                                   padding_mode=padding_mode, split=split,
+                                                   load_vocab=load_vocab)
 
     elif task_mode == 'e2e':
         training_data, model = get_corpus_rocstory(data_args, model, image_size,
-                                            padding_mode=padding_mode, split=split,
-                                            load_vocab=load_vocab)
+                                                   padding_mode=padding_mode, split=split,
+                                                   load_vocab=load_vocab)
 
     elif task_mode == 'book':
         tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
         training_data, model = get_corpus_book(data_args, tokenizer, model, image_size,
-                                              padding_mode=padding_mode, split=split,)
+                                               padding_mode=padding_mode, split=split,)
 
     elif task_mode == 'humanEval':
         tokenizer = AutoTokenizer.from_pretrained('bert-base-uncased')
-        training_data, model = get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode=padding_mode, split=split,)
+        training_data, model = get_corpus_humanEval(
+            data_args, tokenizer, model, image_size, padding_mode=padding_mode, split=split,)
         print(f"training_data: {training_data}\nmodel: {model}")
 
-    if data_args.modality in ['roc-aug', 'roc', 'book', 'yelp', 'commonGen', 'commonGen-aug', 'humanEval'] and data_args.cache_mode=='no':
+    if data_args.modality in ['roc-aug', 'roc', 'book', 'yelp', 'commonGen', 'commonGen-aug', 'humanEval'] and data_args.cache_mode == 'no':
         dataset = TextDataset_NoCache(
             training_data,
             image_size,
@@ -123,13 +125,16 @@ def load_data_text(
     while True:
         yield from data_loader
 
+
 def helper_tokenize_encode_cond(sentence_lst, vocab_dict, model, seqlen, data_args):
     result_train_lst = []
     group_lst = defaultdict(list)
     with torch.no_grad():
         for (src_ids, input_ids) in sentence_lst:
-            tokenized_ = [vocab_dict.get(x, vocab_dict['UNK']) for x in input_ids]
-            tokenized_src = [vocab_dict.get(x, vocab_dict['UNK']) for x in src_ids]
+            tokenized_ = [vocab_dict.get(x, vocab_dict['UNK'])
+                          for x in input_ids]
+            tokenized_src = [vocab_dict.get(
+                x, vocab_dict['UNK']) for x in src_ids]
             input_ids = [0] + tokenized_ + [1]
             group_lst['word_ids'].append(input_ids)
             group_lst['src_ids'].append(tokenized_src)
@@ -137,7 +142,8 @@ def helper_tokenize_encode_cond(sentence_lst, vocab_dict, model, seqlen, data_ar
         print(group_lst['word_ids'][:2])
         print('padding mode is pad')
         max_length = seqlen
-        group_lst['word_ids'] = _collate_batch_helper(group_lst['word_ids'], vocab_dict['PAD'], max_length)
+        group_lst['word_ids'] = _collate_batch_helper(
+            group_lst['word_ids'], vocab_dict['PAD'], max_length)
         max_src_length = max([len(xx) for xx in group_lst['src_ids']])
         print(max_src_length, seqlen)
         max_src_length = min(seqlen, max_src_length)
@@ -146,9 +152,8 @@ def helper_tokenize_encode_cond(sentence_lst, vocab_dict, model, seqlen, data_ar
                                                                             max_src_length,
                                                                             return_mask=True)
 
-
         for input_ids, src_ids, src_mask in zip(group_lst['word_ids'], group_lst['src_ids'],
-                                      group_lst['src_mask']):
+                                                group_lst['src_mask']):
             if data_args.experiment.startswith('random'):
                 hidden_state = model(torch.tensor(input_ids))
             elif data_args.experiment == 'gpt2_pre_compress':
@@ -158,28 +163,32 @@ def helper_tokenize_encode_cond(sentence_lst, vocab_dict, model, seqlen, data_ar
                 hidden_state = hidden_state * data_args.emb_scale_factor
             result_train_lst.append({'input_ids': input_ids,
                                      'hidden_states': hidden_state.cpu().tolist(),
-                                     'src_ids':src_ids,
-                                     'src_mask':src_mask
+                                     'src_ids': src_ids,
+                                     'src_mask': src_mask
                                      })
 
     return result_train_lst
 
+
 def helper_tokenize_stream(sentence_lst, vocab_dict, model, seqlen, data_args, padding_mode, ):
     import psutil
     # Process.memory_info is expressed in bytes, so convert to megabytes
-    print(f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
+    print(
+        f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
     from datasets import Dataset as Dataset2
-    raw_datasets = Dataset2.from_dict({'text':sentence_lst})
+    raw_datasets = Dataset2.from_dict({'text': sentence_lst})
     print(raw_datasets)
-    print(f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
-
+    print(
+        f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
 
     def tokenize_function(examples):
         if isinstance(vocab_dict, dict):
-            input_ids = [[0] + [vocab_dict.get(x, vocab_dict['UNK']) for x in seq] + [1] for seq in examples['text']]
+            input_ids = [[0] + [vocab_dict.get(x, vocab_dict['UNK'])
+                                for x in seq] + [1] for seq in examples['text']]
         elif isinstance(vocab_dict, PreTrainedTokenizerFast):
             examples['text'] = [" ".join(seq) for seq in examples['text']]
-            input_ids = vocab_dict(examples['text'], add_special_tokens=True)['input_ids']
+            input_ids = vocab_dict(examples['text'], add_special_tokens=True)[
+                'input_ids']
         result_dict = {'input_ids': input_ids}
         # clm input could be much much longer than block_size
         return result_dict
@@ -193,22 +202,25 @@ def helper_tokenize_stream(sentence_lst, vocab_dict, model, seqlen, data_args, p
         desc="Running tokenizer on dataset",
     )
     print(tokenized_datasets)
-    print(f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
+    print(
+        f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
 
     if padding_mode == 'block':
         block_size = seqlen
+
         def group_texts(examples):
-            concatenated_examples = {k: list(chain(*examples[k])) for k in examples.keys()}
+            concatenated_examples = {
+                k: list(chain(*examples[k])) for k in examples.keys()}
             total_length = len(concatenated_examples[list(examples.keys())[0]])
             if total_length >= block_size:
                 total_length = (total_length // block_size) * block_size
             result = {
-                k: [t[i: i + block_size] for i in range(0, total_length, block_size)]
+                k: [t[i: i + block_size]
+                    for i in range(0, total_length, block_size)]
                 for k, t in concatenated_examples.items()
             }
             result["labels"] = result["input_ids"].copy()
             return result
-
 
         lm_datasets = tokenized_datasets.map(
             group_texts,
@@ -221,13 +233,16 @@ def helper_tokenize_stream(sentence_lst, vocab_dict, model, seqlen, data_args, p
         def pad_function(group_lst):
             max_length = seqlen
             if isinstance(vocab_dict, dict):
-                group_lst['input_ids'] = _collate_batch_helper(group_lst['input_ids'], vocab_dict['PAD'], max_length)
+                group_lst['input_ids'] = _collate_batch_helper(
+                    group_lst['input_ids'], vocab_dict['PAD'], max_length)
             else:
-                group_lst['input_ids'] = _collate_batch_helper(group_lst['input_ids'], vocab_dict.pad_token_id, max_length)
+                group_lst['input_ids'] = _collate_batch_helper(
+                    group_lst['input_ids'], vocab_dict.pad_token_id, max_length)
             return group_lst
 
         # Process.memory_info is expressed in bytes, so convert to megabytes
-        print(f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
+        print(
+            f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
 
         lm_datasets = tokenized_datasets.map(
             pad_function,
@@ -236,40 +251,47 @@ def helper_tokenize_stream(sentence_lst, vocab_dict, model, seqlen, data_args, p
             desc=f"padding",
         )
 
-
     print(lm_datasets, 'padded dataset')
-    print(f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
+    print(
+        f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
     import datasets
     raw_datasets = datasets.DatasetDict()
     raw_datasets['train'] = lm_datasets
-    print(f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
+    print(
+        f"RAM used: {psutil.Process().memory_info().rss / (1024 * 1024):.2f} MB")
     return raw_datasets
+
 
 def helper_tokenize_encode(sentence_lst, vocab_dict, model, seqlen, data_args, padding_mode, ):
     result_train_lst = []
     group_lst = defaultdict(list)
     with torch.no_grad():
         for input_ids in sentence_lst:
-            tokenized_ = [vocab_dict.get(x, vocab_dict['UNK']) for x in input_ids]
+            tokenized_ = [vocab_dict.get(x, vocab_dict['UNK'])
+                          for x in input_ids]
             input_ids = [0] + tokenized_ + [1]
             group_lst['word_ids'].append(input_ids)
         print(group_lst['word_ids'][:2])
 
         if padding_mode == 'block':
             print('padding mode is block')
-            concatenated_examples = {k: sum(group_lst[k], []) for k in group_lst.keys()}
-            total_length = len(concatenated_examples[list(group_lst.keys())[0]])
+            concatenated_examples = {
+                k: sum(group_lst[k], []) for k in group_lst.keys()}
+            total_length = len(
+                concatenated_examples[list(group_lst.keys())[0]])
             block_size = seqlen
             total_length = (total_length // block_size) * block_size
             # Split by chunks of max_len.
             group_lst = {
-                k: [t[i: i + block_size] for i in range(0, total_length, block_size)]
+                k: [t[i: i + block_size]
+                    for i in range(0, total_length, block_size)]
                 for k, t in concatenated_examples.items()
             }
         elif padding_mode == 'pad':
             print('padding mode is pad')
             max_length = seqlen
-            group_lst['word_ids'] = _collate_batch_helper(group_lst['word_ids'], vocab_dict['PAD'], max_length)
+            group_lst['word_ids'] = _collate_batch_helper(
+                group_lst['word_ids'], vocab_dict['PAD'], max_length)
 
         for input_ids in group_lst['word_ids']:
             if data_args.experiment.startswith('random'):
@@ -281,22 +303,26 @@ def helper_tokenize_encode(sentence_lst, vocab_dict, model, seqlen, data_args, p
                 hidden_state = hidden_state * data_args.emb_scale_factor
             elif data_args.experiment == 'glove':
                 hidden_state = model(torch.tensor(input_ids))
-            result_train_lst.append({'input_ids': input_ids, 'hidden_states': hidden_state.cpu().tolist()})
+            result_train_lst.append(
+                {'input_ids': input_ids, 'hidden_states': hidden_state.cpu().tolist()})
 
     return result_train_lst
+
 
 def load_glove_model(File):
     print("Loading Glove Model")
     glove_model = {}
-    with open(File,'r') as f:
+    with open(File, 'r') as f:
         for line in f:
             split_line = line.split()
             word = split_line[0]
-            embedding = torch.tensor(np.array(split_line[1:], dtype=np.float64))
+            embedding = torch.tensor(
+                np.array(split_line[1:], dtype=np.float64))
             # embedding = np.array(split_line[1:], dtype=np.float64)
             glove_model[word] = embedding
     print(f"{len(glove_model)} words loaded!")
     return glove_model
+
 
 def load_glove(vocab):
     model = torch.nn.Embedding(len(vocab), 50)
@@ -319,7 +345,9 @@ def load_glove(vocab):
 def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                         split='train', load_vocab=None):
     print("improved-diffusion/improved_diffusion/text_datasets.py, method: get_corpus_rocstory")
-    import csv, torch, json
+    import csv
+    import torch
+    import json
     from spacy.lang.en import English
 
     if data_args.experiment_mode == 'lm':
@@ -361,7 +389,8 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
             if split == 'train':
                 print('loading form the TRAIN set')
                 path_lst = [f'{data_args.roc_train}/roc_train.json']
-                path_lst.append('diffusion_lm/improved-diffusion/diff_models/rocstories_gptj.txt')
+                path_lst.append(
+                    'diffusion_lm/improved-diffusion/diff_models/rocstories_gptj.txt')
                 # path_lst.append('diffusion_lm/improved-diffusion/cache/ar_model_augment_roc.json')
                 # path_lst.append('diffusion_lm/improved-diffusion/cache/ar_model_augment_roc2.json')
 
@@ -385,7 +414,8 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                             sentences = json.loads(row)[0].strip()
                             word_lst = [x.text for x in tokenizer(sentences)]
                             sentence_lst.append(word_lst)
-            print(sentence_lst[:2],sentence_lst[-2:], 'dataset size=',len(sentence_lst))
+            print(sentence_lst[:2], sentence_lst[-2:],
+                  'dataset size=', len(sentence_lst))
         elif data_args.modality == 'simple-wiki':
             print('loading dataset from simple wikipedia')
             sentence_lst = []
@@ -441,7 +471,8 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
             if split in ['train', 'valid', 'test']:
 
                 with open(path, 'r') as csvfile:
-                    yelp_reader = csv.reader(csvfile) #delimiter=' ', quotechar='|')
+                    # delimiter=' ', quotechar='|')
+                    yelp_reader = csv.reader(csvfile)
                     for row in yelp_reader:
                         sentences = row[1]
                         word_lst = [x.text for x in tokenizer(sentences)]
@@ -481,7 +512,8 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                 print('loading form the TRAIN set')
                 path = f'{data_args.commonGen_train}/commongen.train.jsonl'
                 path_lst = [f'{data_args.roc_train}/roc_train.json']
-                path_lst.append('diffusion_lm/improved-diffusion/diff_models/rocstories_gptj.txt')
+                path_lst.append(
+                    'diffusion_lm/improved-diffusion/diff_models/rocstories_gptj.txt')
             elif split == 'valid':
                 print('loading form the VALID set')
                 path = f'{data_args.commonGen_train}/commongen.dev.jsonl'
@@ -509,7 +541,8 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                             spl = [[]]
                             for x, y in itertools.groupby(word_lst, lambda z: z == '.'):
                                 spl[-1].extend(y)
-                                if x: spl.append([])
+                                if x:
+                                    spl.append([])
                             sentence_lst.extend(spl[:-1])
                 else:
                     with open(path, 'r') as roc_reader:
@@ -519,11 +552,11 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                             spl = [[]]
                             for x, y in itertools.groupby(word_lst, lambda z: z == '.'):
                                 spl[-1].extend(y)
-                                if x: spl.append([])
+                                if x:
+                                    spl.append([])
                             sentence_lst.extend(spl[:-1])
 
             print(sentence_lst[-2:])
-
 
         # get tokenizer.
         if load_vocab is None:
@@ -557,7 +590,7 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
                 counter.update(src_ids)
 
     if load_vocab is None:
-        vocab_dict = {'START': 0, 'END': 1, 'UNK':2, 'PAD':3}
+        vocab_dict = {'START': 0, 'END': 1, 'UNK': 2, 'PAD': 3}
         for k, v in counter.items():
             if v > 10:
                 vocab_dict[k] = len(vocab_dict)
@@ -581,14 +614,13 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
             else:
                 assert False, "invalid type of vocab_dict"
 
-
-
     if model is None and data_args.experiment == 'random':
         model = torch.nn.Embedding(len(vocab_dict), data_args.in_channel)
         print('initializing the random embeddings', model)
         torch.nn.init.normal_(model.weight)
         path_save = f'{data_args.checkpoint_path}/random_emb.torch'
-        print(f'save the random encoder to {data_args.checkpoint_path}/random_emb.torch')
+        print(
+            f'save the random encoder to {data_args.checkpoint_path}/random_emb.torch')
         torch.save(model.state_dict(), path_save)
     elif data_args.experiment == 'gpt2_pre_compress':
         assert model is not None
@@ -596,22 +628,25 @@ def get_corpus_rocstory(data_args, model, image_size, padding_mode='block',
         assert data_args.in_channel == 50
         model = load_glove(vocab_dict)
         path_save = f'{data_args.checkpoint_path}/random_emb.torch'
-        print(f'save the random encoder to {data_args.checkpoint_path}/random_emb.torch')
+        print(
+            f'save the random encoder to {data_args.checkpoint_path}/random_emb.torch')
         torch.save(model.state_dict(), path_save)
 
     path_save = f'{data_args.checkpoint_path}/random_emb.torch'
     if not os.path.exists(path_save) and data_args.experiment == 'random':
         torch.save(model.state_dict(), path_save)
 
-
     if data_args.experiment_mode == 'lm' and data_args.modality in ['roc-aug', 'roc', 'yelp', 'commonGen', 'commonGen-aug'] \
-            and data_args.cache_mode=='no':
-        train_dataset = helper_tokenize_stream(sentence_lst, vocab_dict, model, image_size**2, data_args, padding_mode)
+            and data_args.cache_mode == 'no':
+        train_dataset = helper_tokenize_stream(
+            sentence_lst, vocab_dict, model, image_size**2, data_args, padding_mode)
         return train_dataset, model
     elif data_args.experiment_mode == 'lm':
-        result_train_lst = helper_tokenize_encode(sentence_lst, vocab_dict, model, image_size**2, data_args, padding_mode)
+        result_train_lst = helper_tokenize_encode(
+            sentence_lst, vocab_dict, model, image_size**2, data_args, padding_mode)
     elif data_args.experiment_mode == 'conditional_gen':
-        result_train_lst = helper_tokenize_encode_cond(sentence_lst, vocab_dict, model, image_size ** 2, data_args)
+        result_train_lst = helper_tokenize_encode_cond(
+            sentence_lst, vocab_dict, model, image_size ** 2, data_args)
     return {'train': result_train_lst}, model
 
 
@@ -644,10 +679,12 @@ def read_e2e_files(path, args, tokenizer):
     temp = '1'
     prompt_text_dict = file_dict
     prompt_text_lst = list(prompt_text_dict.keys())
-    gold_dir = os.path.join(args.out_dir, '{}_{}_{}'.format(temp, args.split, 'gold'))
+    gold_dir = os.path.join(
+        args.out_dir, '{}_{}_{}'.format(temp, args.split, 'gold'))
     print("gold dir", gold_dir)
     write_e2e_corr(prompt_text_lst, prompt_text_dict, gold_dir)
-    src_dir = os.path.join(args.out_dir, '{}_{}_{}'.format(temp, args.split, 'src'))
+    src_dir = os.path.join(
+        args.out_dir, '{}_{}_{}'.format(temp, args.split, 'src'))
     write_e2e_src(prompt_text_lst, src_dir)
     final_lst = [(xx, prompt_text_dict[xx][0]) for xx in prompt_text_lst]
     return final_lst
@@ -675,7 +712,6 @@ def get_corpus_book(data_args, tokenizer, model, image_size, padding_mode='block
         output = tokenizer(examples['text'], add_special_tokens=False)
         return output
 
-
     tokenized_datasets = raw_datasets.map(
         tokenize_function,
         batched=True,
@@ -686,108 +722,6 @@ def get_corpus_book(data_args, tokenizer, model, image_size, padding_mode='block
 
     print(tokenized_datasets)
 
-    block_size = max_length
-
-    # Main data processing function that will concatenate all texts from our dataset and generate chunks of block_size.
-    def group_texts(examples):
-        # Concatenate all texts.
-        concatenated_examples = {k: list(chain(*examples[k])) for k in examples.keys()}
-        total_length = len(concatenated_examples[list(examples.keys())[0]])
-        if total_length >= block_size:
-            total_length = (total_length // block_size) * block_size
-        result = {
-            k: [t[i: i + block_size] for i in range(0, total_length, block_size)]
-            for k, t in concatenated_examples.items()
-        }
-        return result
-
-    lm_datasets = tokenized_datasets.map(
-        group_texts,
-        batched=True,
-        num_proc=4,
-        load_from_cache_file=True,
-        desc=f"Grouping texts in chunks of {block_size}",
-    )
-
-    print(lm_datasets)
-
-    if model is None:
-        if data_args.training_mode.startswith('e2e'):
-            print('since its e2e, initialize a dummy embedding' )
-            model = torch.nn.Embedding(len(tokenizer), 1)
-        else:
-            model = torch.nn.Embedding(len(tokenizer), data_args.in_channel)
-        print('initializing the random embeddings', model)
-        torch.nn.init.normal_(model.weight)
-        path_save = f'{data_args.checkpoint_path}/random_emb.torch'
-        print(f'save the random encoder to {data_args.checkpoint_path}/random_emb.torch')
-        torch.save(model.state_dict(), path_save)
-
-    if split == 'train':
-        return lm_datasets, model
-    else:
-        lm_datasets['train'] = lm_datasets['validation']
-        return lm_datasets, model
-
-
-def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="block", split="train",):
-    max_length = image_size ** 2
-    assert padding_mode == 'block'
-    raw_datasets = load_dataset(
-        'openai_humaneval', split='test')  # loading dataset
-    raw_datasets = raw_datasets.train_test_split(test_size=0.2, shuffle=True)
-    column_names = raw_datasets['train'].column_names
-    print("column names ********")
-    print(column_names)
-    print('\n\n')
-    print("prompt info: ")
-    prompt = raw_datasets['train']['prompt']
-    prompt_lens = [len(iid) for iid in prompt]
-    maximum = np.max(prompt_lens)
-    minimum = np.min(prompt_lens)
-    std = np.std(prompt_lens)
-    mean = np.mean(prompt_lens)
-    print(f"maximum: {maximum}")
-    print(f"minimum: {minimum}")
-    print(f"std: {std}")
-    print(f"mean: {mean}")
-    print('\n\n\n')
-    print("prompt info: ")
-    canonical_solution = raw_datasets['train']['canonical_solution']
-    prompt = raw_datasets['train']['prompt']
-    cs_lens = [len(iid) for iid in prompt]
-    maximum = np.max(cs_lens)
-    minimum = np.min(cs_lens)
-    std = np.std(cs_lens)
-    mean = np.mean(cs_lens)
-    print(f"maximum: {maximum}")
-    print(f"minimum: {minimum}")
-    print(f"std: {std}")
-    print(f"mean: {mean}")
-
-    def tokenize_function(examples):
-        output = tokenizer(examples['canonical_solution'], add_special_tokens=False)
-        input_ids = output['input_ids']
-        input_ids_len = [len(iid) for iid in input_ids]
-        print("tokenize_function info")
-        maximum = np.max(input_ids_len)
-        minimum = np.min(input_ids_len)
-        std = np.std(input_ids_len)
-        mean = np.mean(input_ids_len)
-        print(f"maximum: {maximum}")
-        print(f"minimum: {minimum}")
-        print(f"std: {std}")
-        print(f"mean: {mean}")
-        return output
-
-    tokenized_datasets = raw_datasets.map(
-        tokenize_function,
-        batched=True,
-        num_proc=data_args.preprocessing_num_workers,
-        remove_columns=column_names,
-        load_from_cache_file=True,
-    )
-    print(f"tokenized_datasets: {tokenized_datasets}")
     block_size = max_length
 
     # Main data processing function that will concatenate all texts from our dataset and generate chunks of block_size.
@@ -814,17 +748,123 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
     )
 
     print(lm_datasets)
-    print("lm_datasets info")
-    input_ids = lm_datasets['train']['input_ids']
-    input_ids_len = [len(iid) for iid in input_ids]
-    maximum = np.max(input_ids_len)
-    minimum = np.min(input_ids_len)
-    std = np.std(input_ids_len)
-    mean = np.mean(input_ids_len)
-    print(f"maximum: {maximum}")
-    print(f"minimum: {minimum}")
-    print(f"std: {std}")
-    print(F"mean: {mean}")
+
+    if model is None:
+        if data_args.training_mode.startswith('e2e'):
+            print('since its e2e, initialize a dummy embedding')
+            model = torch.nn.Embedding(len(tokenizer), 1)
+        else:
+            model = torch.nn.Embedding(len(tokenizer), data_args.in_channel)
+        print('initializing the random embeddings', model)
+        torch.nn.init.normal_(model.weight)
+        path_save = f'{data_args.checkpoint_path}/random_emb.torch'
+        print(
+            f'save the random encoder to {data_args.checkpoint_path}/random_emb.torch')
+        torch.save(model.state_dict(), path_save)
+
+    if split == 'train':
+        return lm_datasets, model
+    else:
+        lm_datasets['train'] = lm_datasets['validation']
+        return lm_datasets, model
+
+
+def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="block", split="train",):
+    max_length = image_size ** 2
+    assert padding_mode == 'block'
+    raw_datasets = load_dataset(
+        'openai_humaneval', split='test')  # loading dataset
+    raw_datasets = raw_datasets.train_test_split(test_size=0.2, shuffle=True)
+    column_names = raw_datasets['train'].column_names
+    print("column names ********")
+    print(column_names)
+    print('\n\n')
+    # print("prompt info: ")
+    # prompt = raw_datasets['train']['prompt']
+    # prompt_lens = [len(iid) for iid in prompt]
+    # maximum = np.max(prompt_lens)
+    # minimum = np.min(prompt_lens)
+    # std = np.std(prompt_lens)
+    # mean = np.mean(prompt_lens)
+    # print(f"maximum: {maximum}")
+    # print(f"minimum: {minimum}")
+    # print(f"std: {std}")
+    # print(f"mean: {mean}")
+    # print('\n\n\n')
+    # print("prompt info: ")
+    # canonical_solution = raw_datasets['train']['canonical_solution']
+    # prompt = raw_datasets['train']['prompt']
+    # cs_lens = [len(iid) for iid in prompt]
+    # maximum = np.max(cs_lens)
+    # minimum = np.min(cs_lens)
+    # std = np.std(cs_lens)
+    # mean = np.mean(cs_lens)
+    # print(f"maximum: {maximum}")
+    # print(f"minimum: {minimum}")
+    # print(f"std: {std}")
+    # print(f"mean: {mean}")
+
+    def tokenize_function(examples):
+        output = tokenizer(
+            examples['canonical_solution'], add_special_tokens=False)
+        # input_ids = output['input_ids']
+        # input_ids_len = [len(iid) for iid in input_ids]
+        # print("tokenize_function info")
+        # maximum = np.max(input_ids_len)
+        # minimum = np.min(input_ids_len)
+        # std = np.std(input_ids_len)
+        # mean = np.mean(input_ids_len)
+        # print(f"maximum: {maximum}")
+        # print(f"minimum: {minimum}")
+        # print(f"std: {std}")
+        # print(f"mean: {mean}")
+        return output
+
+    tokenized_datasets = raw_datasets.map(
+        tokenize_function,
+        batched=True,
+        num_proc=data_args.preprocessing_num_workers,
+        remove_columns=column_names,
+        load_from_cache_file=True,
+    )
+    # print(f"tokenized_datasets: {tokenized_datasets}")
+    block_size = max_length
+
+    # Main data processing function that will concatenate all texts from our dataset and generate chunks of block_size.
+    def group_texts(examples):
+        # Concatenate all texts.
+        concatenated_examples = {
+            k: list(chain(*examples[k])) for k in examples.keys()}
+        total_length = len(concatenated_examples[list(examples.keys())[0]])
+        if total_length >= block_size:
+            total_length = (total_length // block_size) * block_size
+        result = {
+            k: [t[i: i + block_size]
+                for i in range(0, total_length, block_size)]
+            for k, t in concatenated_examples.items()
+        }
+        return result
+
+    lm_datasets = tokenized_datasets.map(
+        group_texts,
+        batched=True,
+        num_proc=4,
+        load_from_cache_file=True,
+        desc=f"Grouping texts in chunks of {block_size}",
+    )
+
+    # print(lm_datasets)
+    # print("lm_datasets info")
+    # input_ids = lm_datasets['train']['input_ids']
+    # input_ids_len = [len(iid) for iid in input_ids]
+    # maximum = np.max(input_ids_len)
+    # minimum = np.min(input_ids_len)
+    # std = np.std(input_ids_len)
+    # mean = np.mean(input_ids_len)
+    # print(f"maximum: {maximum}")
+    # print(f"minimum: {minimum}")
+    # print(f"std: {std}")
+    # print(F"mean: {mean}")
 
     if model is None:
         if data_args.training_mode.startswith('e2e'):
@@ -844,6 +884,7 @@ def get_corpus_humanEval(data_args, tokenizer, model, image_size, padding_mode="
     else:
         lm_datasets['train'] = lm_datasets['test']
         return lm_datasets, model
+
 
 class TextDataset(Dataset):
     def __init__(self, text_datasets, resolution, data_args, model_arch='conv-unet',
@@ -874,34 +915,37 @@ class TextDataset(Dataset):
             arr = np.array(self.text_datasets['train'][idx]['hidden_states'],
                            dtype=np.float32).reshape(self.resolution, self.resolution, -1)
             # print(self.eigen_transform.shape)
-            if self.eigen_transform  is not None:
+            if self.eigen_transform is not None:
                 old_shape = arr.shape
                 arr = arr.reshape(1, -1) - self.eigen_transform['mean']
                 arr = arr @ self.eigen_transform['map']
                 arr = arr.reshape(old_shape)
             if hasattr(self.data_args, 'noise_level') and self.data_args.noise_level > 0:
-                arr = arr + self.data_args.noise_level * np.random.randn(*arr.shape).astype(arr.dtype)
-
+                arr = arr + self.data_args.noise_level * \
+                    np.random.randn(*arr.shape).astype(arr.dtype)
 
             out_dict = {}
-            out_dict['input_ids'] = np.array(self.text_datasets['train'][idx]['input_ids'])
+            out_dict['input_ids'] = np.array(
+                self.text_datasets['train'][idx]['input_ids'])
             # if self.local_classes is not None:
             #     out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
             # print(out_dict.keys())
             return np.transpose(arr, [2, 0, 1]), out_dict
         elif self.model_arch == '1d-unet':
             arr = np.array(self.text_datasets['train'][idx]['hidden_states'],
-                           dtype=np.float32) # seqlen, dim
-            if self.eigen_transform  is not None:
+                           dtype=np.float32)  # seqlen, dim
+            if self.eigen_transform is not None:
                 old_shape = arr.shape
                 arr = arr.reshape(1, -1) - self.eigen_transform['mean']
                 arr = arr @ self.eigen_transform['map']
                 arr = arr.reshape(old_shape)
             if hasattr(self.data_args, 'noise_level') and self.data_args.noise_level > 0:
-                arr = arr + self.data_args.noise_level * np.random.randn(*arr.shape).astype(arr.dtype)
+                arr = arr + self.data_args.noise_level * \
+                    np.random.randn(*arr.shape).astype(arr.dtype)
             arr = np.transpose(arr, [1, 0])
             out_dict = {}
-            out_dict['input_ids'] = np.array(self.text_datasets['train'][idx]['input_ids'])
+            out_dict['input_ids'] = np.array(
+                self.text_datasets['train'][idx]['input_ids'])
             # out_dict['mapping_func'] = self.mapping_func
             # if self.local_classes is not None:
             #     out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
@@ -910,7 +954,7 @@ class TextDataset(Dataset):
         else:
             arr = np.array(self.text_datasets['train'][idx]['hidden_states'],
                            dtype=np.float32)
-            if self.eigen_transform  is not None:
+            if self.eigen_transform is not None:
                 old_shape = arr.shape
                 # arr = arr.reshape(1, -1) @ self.eigen_transform
                 arr = arr.reshape(1, -1) - self.eigen_transform['mean']
@@ -920,15 +964,19 @@ class TextDataset(Dataset):
             if hasattr(self.data_args, 'noise_level') and self.data_args.noise_level > 0:
                 # print(arr.dtype)
                 # print(self.data_args.noise_level, 'using the noise level.')
-                arr = arr + self.data_args.noise_level * np.random.randn(*arr.shape).astype(arr.dtype)
+                arr = arr + self.data_args.noise_level * \
+                    np.random.randn(*arr.shape).astype(arr.dtype)
                 # print(arr.dtype)
 
             out_dict = {}
-            out_dict['input_ids'] = np.array(self.text_datasets['train'][idx]['input_ids'])
+            out_dict['input_ids'] = np.array(
+                self.text_datasets['train'][idx]['input_ids'])
             # out_dict['mapping_func'] = self.mapping_func
             if self.data_args.experiment_mode == 'conditional_gen':
-                out_dict['src_ids'] = np.array(self.text_datasets['train'][idx]['src_ids'])
-                out_dict['src_mask'] = np.array(self.text_datasets['train'][idx]['src_mask'])
+                out_dict['src_ids'] = np.array(
+                    self.text_datasets['train'][idx]['src_ids'])
+                out_dict['src_mask'] = np.array(
+                    self.text_datasets['train'][idx]['src_mask'])
             # if self.local_classes is not None:
             #     out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
             return arr, out_dict
@@ -983,10 +1031,12 @@ class TextDataset_NoCache(Dataset):
                     arr = arr @ self.eigen_transform['map']
                     arr = arr.reshape(old_shape)
                 if hasattr(self.data_args, 'noise_level') and self.data_args.noise_level > 0:
-                    arr = arr + self.data_args.noise_level * np.random.randn(*arr.shape).astype(arr.dtype)
+                    arr = arr + self.data_args.noise_level * \
+                        np.random.randn(*arr.shape).astype(arr.dtype)
 
                 out_dict = {}
-                out_dict['input_ids'] = np.array(self.text_datasets['train'][idx]['input_ids'])
+                out_dict['input_ids'] = np.array(
+                    self.text_datasets['train'][idx]['input_ids'])
                 # if self.local_classes is not None:
                 #     out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
                 # print(out_dict.keys())
@@ -1000,10 +1050,12 @@ class TextDataset_NoCache(Dataset):
                     arr = arr @ self.eigen_transform['map']
                     arr = arr.reshape(old_shape)
                 if hasattr(self.data_args, 'noise_level') and self.data_args.noise_level > 0:
-                    arr = arr + self.data_args.noise_level * np.random.randn(*arr.shape).astype(arr.dtype)
+                    arr = arr + self.data_args.noise_level * \
+                        np.random.randn(*arr.shape).astype(arr.dtype)
                 arr = np.transpose(arr, [1, 0])
                 out_dict = {}
-                out_dict['input_ids'] = np.array(self.text_datasets['train'][idx]['input_ids'])
+                out_dict['input_ids'] = np.array(
+                    self.text_datasets['train'][idx]['input_ids'])
                 # out_dict['mapping_func'] = self.mapping_func
                 # if self.local_classes is not None:
                 #     out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
@@ -1022,22 +1074,29 @@ class TextDataset_NoCache(Dataset):
                 if hasattr(self.data_args, 'noise_level') and self.data_args.noise_level > 0:
                     # print(arr.dtype)
                     # print(self.data_args.noise_level, 'using the noise level.')
-                    arr = arr + self.data_args.noise_level * np.random.randn(*arr.shape).astype(arr.dtype)
+                    arr = arr + self.data_args.noise_level * \
+                        np.random.randn(*arr.shape).astype(arr.dtype)
                     # print(arr.dtype)
 
                 out_dict = {}
-                out_dict['input_ids'] = np.array(self.text_datasets['train'][idx]['input_ids'])
+                out_dict['input_ids'] = np.array(
+                    self.text_datasets['train'][idx]['input_ids'])
                 # out_dict['mapping_func'] = self.mapping_func
                 if self.data_args.experiment_mode == 'conditional_gen':
-                    out_dict['src_ids'] = np.array(self.text_datasets['train'][idx]['src_ids'])
-                    out_dict['src_mask'] = np.array(self.text_datasets['train'][idx]['src_mask'])
+                    out_dict['src_ids'] = np.array(
+                        self.text_datasets['train'][idx]['src_ids'])
+                    out_dict['src_mask'] = np.array(
+                        self.text_datasets['train'][idx]['src_mask'])
                 # if self.local_classes is not None:
                 #     out_dict["y"] = np.array(self.local_classes[idx], dtype=np.int64)
                 return arr, out_dict
 
+
 def _collate_batch_helper(examples, pad_token_id, max_length, return_mask=False):
-    result = torch.full([len(examples), max_length], pad_token_id, dtype=torch.int64).tolist()
-    mask_ = torch.full([len(examples), max_length], pad_token_id, dtype=torch.int64).tolist()
+    result = torch.full([len(examples), max_length],
+                        pad_token_id, dtype=torch.int64).tolist()
+    mask_ = torch.full([len(examples), max_length],
+                       pad_token_id, dtype=torch.int64).tolist()
     for i, example in enumerate(examples):
         curr_len = min(len(example), max_length)
         result[i][:curr_len] = example[:curr_len]
@@ -1045,6 +1104,7 @@ def _collate_batch_helper(examples, pad_token_id, max_length, return_mask=False)
     if return_mask:
         return result, mask_
     return result
+
 
 def _torch_collate_batch(examples, pad_token_id, max_length):
     """Collate `examples` into a batch, using the information in `tokenizer` for padding if necessary."""
@@ -1069,5 +1129,5 @@ def _torch_collate_batch(examples, pad_token_id, max_length):
         if True:
             result[i, : example.shape[0]] = example
         else:
-            result[i, -example.shape[0] :] = example
+            result[i, -example.shape[0]:] = example
     return result
