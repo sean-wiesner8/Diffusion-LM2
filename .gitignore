@@ -1,6 +1,5 @@
 datasets/ROCstory
 datasets/control_target
-datasets/e2e_data
 improved-diffusion/build
 transformers
 improved-diffusion/improved_diffusion.egg-info
